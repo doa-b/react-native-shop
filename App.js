@@ -27,7 +27,7 @@ const rootReducer = combineReducers({
 );
 
 //remove composeWithDevTools() when going to production
-const store = createStore(rootReducer, composeWithDevTools());
+const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(ReduxThunk)));
 
 export default function App() {
     const [dataLoaded, setDataLoaded] = useState(false);

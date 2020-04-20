@@ -1,6 +1,6 @@
-import React from 'react';
-import { useDispatch, useSelector} from "react-redux";
-import {StyleSheet, View, Text, FlatList, Button} from 'react-native';
+import React, {useState} from 'react';
+import {useDispatch, useSelector} from "react-redux";
+import {StyleSheet, View, Text, FlatList, Button, ActivityIndicator} from 'react-native';
 
 import * as cartActions from '../../store/actions/cart';
 import * as ordersActions from '../../store/actions/orders';
@@ -13,7 +13,8 @@ import Card from "../../components/ui/Card";
  * Created by Doa on 6-4-2020.
  */
 const CartScreen = props => {
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState();
     const dispatch = useDispatch();
     const cartTotalAmount = useSelector(state => state.cart.totalAmount);
     const cartItems = useSelector(state => {
@@ -33,6 +34,13 @@ const CartScreen = props => {
             (a, b) => a.productId > b.productId ? 1 : -1)
     });
 
+    const sendOrderHandler = async () => {
+        setIsLoading(true);
+        // await invisibly wraps the code after in a then() block
+        await dispatch(ordersActions.addOrder(cartItems, cartTotalAmount));
+        setIsLoading(false);
+    };
+
     return (
         <View style={styles.screen}>
             <Card style={styles.summary}>
@@ -42,13 +50,15 @@ const CartScreen = props => {
                     ${Math.round(cartTotalAmount.toFixed(2) * 100) / 100}
                 </Text>
                 </TitleText>
-                <Button
-                    disabled={cartItems.length === 0}
-                    color={Colors.accent}
-                    title="Order Now"
-                onPress={() => {
-                    dispatch(ordersActions.addOrder(cartItems, cartTotalAmount))
-                }}/>
+                {isLoading
+                    ? <ActivityIndicator size="small" color={Colors.accent}/>
+                    : <Button
+                        disabled={cartItems.length === 0}
+                        color={Colors.accent}
+                        title="Order Now"
+                        onPress={sendOrderHandler}/>
+                }
+
             </Card>
             <FlatList
                 data={cartItems}
